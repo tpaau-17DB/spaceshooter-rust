@@ -1,10 +1,11 @@
 use ncurses::*;
+use crate::utils::vectors::*;
 
 pub fn draw_player(position: &Vec<i16>) 
 {
     if position.len() == 2
     {
-        // transform local player position to on-screen gosition
+        // transform local player position to on-screen position
         let mut win_x = 0;
         let mut win_y = 0;
         getmaxyx(stdscr(), &mut win_y, &mut win_x);
@@ -19,6 +20,19 @@ pub fn draw_player(position: &Vec<i16>)
         addstr("|H#H|");
         mv(pos_y + 3, pos_x - 2);
         addstr("\\/ \\/");
+    }
+}
+
+pub fn draw_player_bullets(bullets: &Vec<vector>)
+{
+    let mut win_x = 0;
+    let mut win_y = 0;
+    getmaxyx(stdscr(), &mut win_y, &mut win_x);
+
+    for bullet in bullets
+    {
+        mv(bullet.y as i32 + win_y / 2, bullet.x as i32 + win_x / 2);
+        addstr(".");
     }
 }
 

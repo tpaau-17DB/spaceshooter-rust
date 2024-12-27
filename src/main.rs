@@ -7,6 +7,7 @@ use std::time::Duration;
 mod utils;
 use utils::drawing::*;
 use utils::movement::*;
+use utils::vectors::*;
 
 fn main() 
 {
@@ -23,6 +24,7 @@ fn main()
 
     // 16 ms sleeptime means that game is running at 60 FPS.
     // 60 FPS is a bit of an overkill and I might change that later
+    // this value is also assumed to be the delta time
     let sleeptime_ms = 16;
 
     // those are the dimensions of the in-game border
@@ -34,6 +36,10 @@ fn main()
 
     // local vector [0, 0] represents the center of the screen
     let mut player_position: Vec<i16> = [0, gamewindow_y / 2].to_vec();
+
+    let mut player_bullets: Vec<vector> = Vec::new();
+    let bullet_timeout_ms: i16 = 100;
+    let mut bullet_cooldown = bullet_timeout_ms;
 
     let bounds: Vec<i16> = [gamewindow_x / 2, gamewindow_y / 2].to_vec();
 
@@ -88,12 +94,28 @@ fn main()
             }
         }
 
+
+        // shoot!
+        bullet_cooldown -= sleeptime_ms;
+        if bullet_cooldown <= 0
+        {
+            bullet_cooldown = bullet_timeout_ms;
+
+            player_bullets.push(vector { x: player_position[0], y: player_position[1] });
+        }
+
         // make sure player is in bounds
-        force_bounds(&mut player_position, &bounds);
+        force_bounds_player(&mut player_position, &bounds);
+
+        move_player_bullets(&mut player_bullets);
+
+        // delete the out of bounds bullets
+        force_bounds_objects(&mut player_bullets, &bounds);
 
         // draw all the stuff
         clear();
         draw_player(&player_position);
+        draw_player_bullets(&player_bullets);
 
         draw_border(win_x / 2 - bounds[0] as i32 - 3, win_y / 2 - bounds[1] as i32 - 1, 2 * bounds[0] as i32 + 7, 2 * bounds[1] as i32 + 6);
 
@@ -111,11 +133,15 @@ fn main()
             message = format!("Window size: x: {}, y: {}", win_x, win_y);
             mv(0, win_x - message.len() as i32);
             addstr(&message);
+
+            message = format!("Bullets: {}", player_bullets.len());
+            mv(0, 0);
+            addstr(&message);
         }
 
         refresh();
 
-        thread::sleep(Duration::from_millis(sleeptime_ms));
+        thread::sleep(Duration::from_millis(sleeptime_ms as u64));
     }
 
     endwin();
