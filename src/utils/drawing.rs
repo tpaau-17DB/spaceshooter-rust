@@ -7,14 +7,16 @@ pub fn draw_player(position: &Vec<i16>)
         let mut win_x = 0;
         let mut win_y = 0;
         getmaxyx(stdscr(), &mut win_y, &mut win_x);
+        let pos_x = position[0] as i32 + win_x / 2;
+        let pos_y = position[1] as i32 + win_y / 2;
 
-        mv(position[1] as i32, position[0] as i32);
+        mv(pos_y, pos_x);
         addstr(".");
-        mv(position[1] as i32 + 1, position[0] as i32 - 1);
+        mv(pos_y + 1, pos_x - 1);
         addstr("/0\\");
-        mv(position[1] as i32 + 2, position[0] as i32 - 2);
+        mv(pos_y + 2, pos_x - 2);
         addstr("|H#H|");
-        mv(position[1] as i32 + 3, position[0] as i32 - 2);
+        mv(pos_y + 3, pos_x - 2);
         addstr("\\/ \\/");
     }
 }

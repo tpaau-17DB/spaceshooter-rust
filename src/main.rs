@@ -34,7 +34,7 @@ fn main()
 
     let window_to_small_message = "The terminal window is too small.";
 
-    let mut player_position: Vec<i16> = [(win_x / 2) as i16, (win_y / 2) as i16].to_vec();
+    let mut player_position: Vec<i16> = [gamewindow_x / 2 as i16, gamewindow_y / 2 as i16].to_vec();
 
     loop 
     {
@@ -80,7 +80,7 @@ fn main()
         }
 
         // make sure player is in bounds
-        force_bounds(&mut player_position, &bounds, &win_x, &win_y);
+        //force_bounds(&mut player_position, &bounds, &win_x, &win_y);
 
         clear();
         draw_player(&player_position);
