@@ -4,6 +4,7 @@ pub fn draw_player(position: &Vec<i16>)
 {
     if position.len() == 2
     {
+        // transform local player position to on-screen gosition
         let mut win_x = 0;
         let mut win_y = 0;
         getmaxyx(stdscr(), &mut win_y, &mut win_x);
