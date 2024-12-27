@@ -80,7 +80,7 @@ fn main()
         }
 
         // make sure player is in bounds
-        //force_bounds(&mut player_position, &bounds, &win_x, &win_y);
+        force_bounds(&mut player_position, &bounds);
 
         clear();
         draw_player(&player_position);
