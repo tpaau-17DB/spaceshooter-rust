@@ -139,6 +139,7 @@ fn main()
             message = format!("Bullets: {}", player_bullets.len());
             mv(0, 0);
             addstr(&message);
+            waddstr(stdscr(), "Grinning face: \u{1F600}\n");
         }
 
         refresh();

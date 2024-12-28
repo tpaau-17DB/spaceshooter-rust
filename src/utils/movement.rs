@@ -1,6 +1,6 @@
 use crate::utils::vectors::*;
 
-pub fn move_player_bullets(bullets: &mut Vec<vector>)
+pub fn move_player_bullets(bullets: &mut Vec<Vector>)
 {
     for bullet in bullets
     {
@@ -37,7 +37,7 @@ pub fn force_bounds_player(position: &mut Vec<i16>, bounds: &Vec<i16>)
     }
 }
 
-pub fn is_in_bounds(object: &vector, bounds: &Vec<i16>) -> bool
+pub fn is_in_bounds(object: &Vector, bounds: &Vec<i16>) -> bool
 {
     if object.x > bounds[0] 
     {
@@ -58,7 +58,7 @@ pub fn is_in_bounds(object: &vector, bounds: &Vec<i16>) -> bool
     return true;
 }
 
-pub fn force_bounds_objects(objects: &mut Vec<vector>, bounds: &Vec<i16>)
+pub fn force_bounds_objects(objects: &mut Vec<Vector>, bounds: &Vec<i16>)
 {
     objects.retain(|object| is_in_bounds(object, bounds));
 }
