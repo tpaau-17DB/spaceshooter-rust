@@ -1,5 +1,5 @@
 # spaceshooter-rust
-A little game running on ncurses written in Rust.
+A little game written in Rust and running on ncurses.
 
 # Installation
 To compile and run the project, run:

@@ -9,56 +9,49 @@ pub fn move_player_bullets(bullets: &mut Vec<Vector>)
 }
 
 // force an object to stay in bounds
-pub fn force_bounds_player(position: &mut Vec<i16>, bounds: &Vec<i16>)
+pub fn force_bounds_player(position: &mut Vector, bounds: &Vector)
 {
-    if position.len() == 2 && bounds.len() == 2
+    if position.x > bounds.x
     {
-        if position[0] > bounds[0]
-        {
-            position[0] = bounds[0];
-        }
-        else if position[0] < -bounds[0]
-        {
-            position[0] = -bounds[0]
-        }
-
-        if position[1] > bounds[1]
-        {
-            position[1] = bounds[1];
-        }
-        else if position[1] < -bounds[1]
-        {
-            position[1] = -bounds[1];
-        }
+        position.x = bounds.x;
     }
-    else 
+    else if position.x < -bounds.x
     {
-        println!("error: either position or bounds vectors have invalid length. position.len(): {}, bounds.len(): {}", position.len(), bounds.len());
+        position.x = -bounds.x
+    }
+
+    if position.y > bounds.y
+    {
+        position.y = bounds.y;
+    }
+    else if position.y < -bounds.y
+    {
+        position.y = -bounds.y;
     }
 }
 
-pub fn is_in_bounds(object: &Vector, bounds: &Vec<i16>) -> bool
+pub fn is_in_bounds(object: &Vector, bounds: &Vector) -> bool
 {
-    if object.x > bounds[0] 
+    if object.x > bounds.x 
     {
         return false;
     }
-    else if object.x < -bounds[0]
+    else if object.x < -bounds.x
     {
         return false;
     }
-    if object.y > bounds[1]
+    if object.y > bounds.y
     {
         return false;
     }
-    else if object.y < -bounds[1]
+    else if object.y < -bounds.y
     {
         return false;
     }
     return true;
 }
 
-pub fn force_bounds_objects(objects: &mut Vec<Vector>, bounds: &Vec<i16>)
+pub fn force_bounds_objects(objects: &mut Vec<Vector>, bounds: &Vector)
 {
     objects.retain(|object| is_in_bounds(object, bounds));
 }
