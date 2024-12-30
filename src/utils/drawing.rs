@@ -26,10 +26,15 @@ pub fn draw_player_bullets(bullets: &Vec<Vector>, window_dimensions: &Vector)
     }
 }
 
-fn draw_asteroid(position: &Vector, window_dimensions: &Vector)
+fn draw_asteroid(asteroid: &BasicEnemy, window_dimensions: &Vector)
 {
-    let x = position.x as i32 + (window_dimensions.x / 2) as i32 - 3;
-    let y = position.y as i32 + (window_dimensions.y / 2) as i32 - 3;
+    let x = asteroid.position.x as i32 + (window_dimensions.x / 2) as i32 - 3;
+    let y = asteroid.position.y as i32 + (window_dimensions.y / 2) as i32 - 3;
+
+    if asteroid.damaged_last_tick
+    {
+        attron(A_BOLD());
+    }
 
     mv(y, x);
     addstr("  --");
@@ -39,13 +44,18 @@ fn draw_asteroid(position: &Vector, window_dimensions: &Vector)
     addstr("| .+/");
     mv(y + 3, x);
     addstr(" \\_/");
+
+    if asteroid.damaged_last_tick
+    {
+        attroff(A_BOLD());
+    }
 }
 
 pub fn draw_asteroids(asteroids: &Vec<BasicEnemy>, window_dimensions: &Vector)
 {
     for asteroid in asteroids
     {
-        draw_asteroid(&asteroid.position, &window_dimensions);
+        draw_asteroid(&asteroid, &window_dimensions);
     }
 }
 

@@ -112,7 +112,7 @@ fn main()
         }
 
         move_player_bullets(&mut player_bullets);
-        update_enemies(&mut asteroids, &bounds, &tick);
+        update_enemies(&mut asteroids, &bounds, &mut player_bullets, &tick);
 
         // make sure player is in bounds
         force_bounds_player(&mut player_position, &bounds);
@@ -132,31 +132,31 @@ fn main()
         if debug_overlay
             {
             let mut message = format!("Player position: x: {}, y: {}", player_position.x, player_position.y);
-            mv(win_y - 1, win_x - message.len() as i32);
-            addstr(&message);
-
-            message = format!("Bounds: x: {}, y: {}", bounds.x, bounds.y);
-            mv(win_y - 1, 0);
-            addstr(&message);
-
-            message = format!("Window size: x: {}, y: {}", win_x, win_y);
-            mv(0, win_x - message.len() as i32);
-            addstr(&message);
-
-            message = format!("Bullets: {}", player_bullets.len());
             mv(0, 0);
             addstr(&message);
 
-            message = format!("Asteroids: {}", asteroids.len());
+            message = format!("Bounds: x: {}, y: {}", bounds.x, bounds.y);
             mv(1, 0);
             addstr(&message);
 
-            message = format!("Tick: {}", tick);
+            message = format!("Window size: x: {}, y: {}", win_x, win_y);
             mv(2, 0);
             addstr(&message);
 
-            message = format!("Target FPS: {}", 1000.0 * (1.0 / sleeptime_ms as f32));
+            message = format!("Bullets: {}", player_bullets.len());
             mv(3, 0);
+            addstr(&message);
+
+            message = format!("Asteroids: {}", asteroids.len());
+            mv(4, 0);
+            addstr(&message);
+
+            message = format!("Tick: {}", tick);
+            mv(5, 0);
+            addstr(&message);
+
+            message = format!("Target FPS: {}", 1000.0 * (1.0 / sleeptime_ms as f32));
+            mv(6, 0);
             addstr(&message);
         }
 
