@@ -4,7 +4,7 @@ pub fn move_player_bullets(bullets: &mut Vec<Vector>)
 {
     for bullet in bullets
     {
-        bullet.y -= 1;
+        bullet.y -= 2;
     }
 }
 

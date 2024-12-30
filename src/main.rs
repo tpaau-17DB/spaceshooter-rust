@@ -8,7 +8,7 @@ mod utils;
 use utils::drawing::*;
 use utils::movement::*;
 use utils::vectors::*;
-//use utils::enemies::*;
+use utils::enemies::*;
 
 fn main() 
 {
@@ -22,45 +22,46 @@ fn main()
     nodelay(stdscr(), true);
     curs_set(CURSOR_VISIBILITY::CURSOR_INVISIBLE);
 
-    // constants
-    let debug_overlay = false;
+    let debug_overlay = true;
 
-    // 16 ms sleeptime means that game is running at 60 FPS.
-    // 60 FPS is a bit of an overkill and I might change that later
+    // 33 ms sleeptime means that game is running at ~30 FPS.
     // this value is also assumed to be the delta time
-    let sleeptime_ms = 16;
+    let sleeptime_ms = 33;
+
+    // this value increments every frame
+    let mut tick = 0;
 
     // those are the dimensions of the in-game border
-    let gamewindow_x: i16 = 32;
-    let gamewindow_y: i16 = 32;
+    let gamewindow_x = 32;
+    let gamewindow_y = 32;
 
-    let win_offset_x: i16 = 7;
-    let win_offset_y: i16 = 12;
+    let win_offset_x = 7;
+    let win_offset_y = 12;
 
     // local Vector [0, 0] represents the center of the screen
     let mut player_position: Vector = Vector{x: 0, y: gamewindow_y / 2};
 
     let mut player_bullets: Vec<Vector> = Vec::new();
-    let bullet_timeout_ms: i16 = 200;
+    let bullet_timeout_ms = 200;
     let mut bullet_cooldown = bullet_timeout_ms;
 
-    //let mut asteroids: Vec<BasicEnemy> = Vec::new();
+    let mut asteroids: Vec<BasicEnemy> = Vec::new();
 
-    //let bounds: Vector = [gamewindow_x / 2, gamewindow_y / 2].to_vec();
     let bounds: Vector = Vector{x: gamewindow_x / 2, y: gamewindow_y / 2};
 
-    let mut win_x = 0;
-    let mut win_y = 0;
-    getmaxyx(stdscr(), &mut win_y, &mut win_x);
+    let mut win_x: i32;
+    let mut win_y: i32;
+    let mut win_dimensions: Vector;
 
     let window_to_small_message = "The terminal window is too small.";
 
     // the main program loop, executed until 'q' is received
     loop 
     {
-        let mut win_x = 0;
-        let mut win_y = 0;
+        win_x = 0;
+        win_y = 0;
         getmaxyx(stdscr(), &mut win_y, &mut win_x);
+        win_dimensions = Vector{x: win_x, y: win_y};
 
         // display the message saying that the window is too small
         if win_x < (gamewindow_x + win_offset_x) as i32 || win_y < (gamewindow_y + win_offset_y) as i32 
@@ -111,7 +112,7 @@ fn main()
         }
 
         move_player_bullets(&mut player_bullets);
-        //update_enemies(&mut asteroids);
+        update_enemies(&mut asteroids, &bounds, &tick);
 
         // make sure player is in bounds
         force_bounds_player(&mut player_position, &bounds);
@@ -121,8 +122,9 @@ fn main()
 
         // draw all the stuff
         clear();
-        draw_player(&player_position);
-        draw_player_bullets(&player_bullets);
+        draw_asteroids(&asteroids, &win_dimensions);
+        draw_player(&player_position, &win_dimensions);
+        draw_player_bullets(&player_bullets, &win_dimensions);
 
         draw_border(win_x / 2 - bounds.x as i32 - 3, win_y / 2 - bounds.y as i32 - 1, 2 * bounds.x as i32 + 7, 2 * bounds.y as i32 + 6);
 
@@ -144,8 +146,21 @@ fn main()
             message = format!("Bullets: {}", player_bullets.len());
             mv(0, 0);
             addstr(&message);
+
+            message = format!("Asteroids: {}", asteroids.len());
+            mv(1, 0);
+            addstr(&message);
+
+            message = format!("Tick: {}", tick);
+            mv(2, 0);
+            addstr(&message);
+
+            message = format!("Target FPS: {}", 1000.0 * (1.0 / sleeptime_ms as f32));
+            mv(3, 0);
+            addstr(&message);
         }
 
+        tick += 1;
         refresh();
 
         thread::sleep(Duration::from_millis(sleeptime_ms as u64));

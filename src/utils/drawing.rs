@@ -1,14 +1,11 @@
 use ncurses::*;
-use crate::utils::vectors::*;
+use crate::{utils::vectors::*, BasicEnemy};
 
-pub fn draw_player(position: &Vector) 
+pub fn draw_player(position: &Vector, window_dimensions: &Vector) 
 {
     // transform local player position to on-screen position
-    let mut win_x = 0;
-    let mut win_y = 0;
-    getmaxyx(stdscr(), &mut win_y, &mut win_x);
-    let pos_x = position.x as i32 + win_x / 2;
-    let pos_y = position.y as i32 + win_y / 2;
+    let pos_x = (position.x + window_dimensions.x / 2) as i32;
+    let pos_y = (position.y + window_dimensions.y / 2) as i32;
 
     mv(pos_y, pos_x);
     addstr(".");
@@ -20,16 +17,35 @@ pub fn draw_player(position: &Vector)
     addstr("\\/ \\/");
 }
 
-pub fn draw_player_bullets(bullets: &Vec<Vector>)
+pub fn draw_player_bullets(bullets: &Vec<Vector>, window_dimensions: &Vector)
 {
-    let mut win_x = 0;
-    let mut win_y = 0;
-    getmaxyx(stdscr(), &mut win_y, &mut win_x);
-
     for bullet in bullets
     {
-        mv(bullet.y as i32 + win_y / 2, bullet.x as i32 + win_x / 2);
+        mv((bullet.y + window_dimensions.y / 2) as i32, (bullet.x + window_dimensions.x / 2) as i32);
         addstr("•");
+    }
+}
+
+fn draw_asteroid(position: &Vector, window_dimensions: &Vector)
+{
+    let x = position.x as i32 + (window_dimensions.x / 2) as i32 - 3;
+    let y = position.y as i32 + (window_dimensions.y / 2) as i32 - 3;
+
+    mv(y, x);
+    addstr("  --");
+    mv(y + 1, x);
+    addstr(" /- .|");
+    mv(y + 2, x);
+    addstr("| .+/");
+    mv(y + 3, x);
+    addstr(" \\_/");
+}
+
+pub fn draw_asteroids(asteroids: &Vec<BasicEnemy>, window_dimensions: &Vector)
+{
+    for asteroid in asteroids
+    {
+        draw_asteroid(&asteroid.position, &window_dimensions);
     }
 }
 
