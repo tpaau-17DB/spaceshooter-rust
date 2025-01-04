@@ -9,6 +9,7 @@ use utils::drawing::*;
 use utils::movement::*;
 use utils::vectors::*;
 use utils::enemies::*;
+use utils::scenes::*;
 
 fn main() 
 {
@@ -38,8 +39,12 @@ fn main()
     let win_offset_x = 7;
     let win_offset_y = 12;
 
+    let mut scene: Scene = Scene::Game;
+
     // local Vector [0, 0] represents the center of the screen
     let mut player_position: Vector = Vector{x: 0, y: gamewindow_y / 2};
+
+    let mut player_score = 0;
 
     let mut player_bullets: Vec<Vector> = Vec::new();
     let bullet_timeout_ms = 200;
@@ -101,37 +106,72 @@ fn main()
             }
         }
 
-
-        // shoot!
-        bullet_cooldown -= sleeptime_ms;
-        if bullet_cooldown <= 0
+        // do specific actions depending on the current scene
+        match scene
         {
-            bullet_cooldown = bullet_timeout_ms;
+            Scene::MainMenu =>
+            {
+                panic!("Scene not yet implemented!");
+            }
 
-            player_bullets.push(Vector{x: player_position.x, y: player_position.y});
+            Scene::Game => 
+            {
+                // shoot!
+                bullet_cooldown -= sleeptime_ms;
+                if bullet_cooldown <= 0
+                {
+                    bullet_cooldown = bullet_timeout_ms;
+
+                    player_bullets.push(Vector{x: player_position.x, y: player_position.y});
+                }
+
+                move_player_bullets(&mut player_bullets);
+                player_score += update_enemies(&mut asteroids, &bounds, &mut player_bullets, &tick);
+
+                // make sure player is in bounds
+                force_bounds_player(&mut player_position, &bounds);
+
+                // delete the out of bounds bullets
+                force_bounds_objects(&mut player_bullets, &bounds);
+
+                if check_if_player_dead(&player_position, &asteroids)
+                {
+                    // game over!
+                    scene = Scene::GameOver;
+                }
+
+                // draw game objects
+                clear();
+                draw_asteroids(&asteroids, &win_dimensions);
+                draw_player(&player_position, &win_dimensions);
+                draw_player_bullets(&player_bullets, &win_dimensions);
+
+                draw_outline(win_x / 2 - bounds.x as i32 - 3, win_y / 2 - bounds.y as i32 - 1, 2 * bounds.x as i32 + 7, 2 * bounds.y as i32 + 6);
+            }
+
+            Scene::GameOver => 
+            {
+                draw_banner(&GAME_OVER_BANNER, &win_dimensions);
+                thread::sleep(Duration::from_millis(200));
+            }
+
+            _ => 
+            {
+                panic!("Unknown scene!");
+            }
         }
 
-        move_player_bullets(&mut player_bullets);
-        update_enemies(&mut asteroids, &bounds, &mut player_bullets, &tick);
 
-        // make sure player is in bounds
-        force_bounds_player(&mut player_position, &bounds);
+        // display score
+        let mut message = format!("Score: {}", player_score);
+        mv(win_dimensions.y / 2 + bounds.y + win_offset_y / 2 - 1, win_dimensions.x / 2 - bounds.x - win_offset_x / 2);
+        addstr(&message);
 
-        // delete the out of bounds bullets
-        force_bounds_objects(&mut player_bullets, &bounds);
-
-        // draw all the stuff
-        clear();
-        draw_asteroids(&asteroids, &win_dimensions);
-        draw_player(&player_position, &win_dimensions);
-        draw_player_bullets(&player_bullets, &win_dimensions);
-
-        draw_border(win_x / 2 - bounds.x as i32 - 3, win_y / 2 - bounds.y as i32 - 1, 2 * bounds.x as i32 + 7, 2 * bounds.y as i32 + 6);
 
         // draw debug overlay if needed
         if debug_overlay
             {
-            let mut message = format!("Player position: x: {}, y: {}", player_position.x, player_position.y);
+            message = format!("Player position: x: {}, y: {}", player_position.x, player_position.y);
             mv(0, 0);
             addstr(&message);
 
