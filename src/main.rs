@@ -5,11 +5,16 @@ use std::thread;
 use std::time::Duration;
 
 mod utils;
-use utils::drawing::*;
-use utils::movement::*;
-use utils::vectors::*;
-use utils::enemies::*;
-use utils::scenes::*;
+
+use crate::utils::
+{
+    drawing::*,
+    movement::*,
+    vectors::*,
+    enemies::*,
+    scenes::*,
+    banners::*
+};
 
 fn main() 
 {
@@ -151,13 +156,8 @@ fn main()
 
             Scene::GameOver => 
             {
-                draw_banner(&GAME_OVER_BANNER, &win_dimensions);
-                thread::sleep(Duration::from_millis(200));
-            }
-
-            _ => 
-            {
-                panic!("Unknown scene!");
+                draw_banner_center(&GAME_OVER_BANNER, &VEC_ZERO, &win_dimensions);
+                thread::sleep(Duration::from_millis(100));
             }
         }
 

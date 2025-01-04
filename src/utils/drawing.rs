@@ -1,33 +1,18 @@
 use ncurses::*;
-use crate::{utils::vectors::*, BasicEnemy};
-use lazy_static::lazy_static;
 
-lazy_static! 
+use crate::utils::
 {
-    pub static ref GAME_OVER_BANNER: Vec<String> = 
-    vec![
-        "  ____    _    __  __ _____    _____     _______ ____  ".to_string(),
-        " / ___|  / \\  |  \\/  | ____|  / _ \\ \\   / / ____|  _ \\ ".to_string(),
-        "| |  _  / _ \\ | |\\/| |  _|   | | | \\ \\ / /|  _| | |_) |".to_string(),
-        "| |_| |/ ___ \\| |  | | |___  | |_| |\\ V / | |___|  _ < ".to_string(),
-        " \\____/_/   \\_\\_|  |_|_____|  \\___/  \\_/  |_____|_| \\_\\".to_string(),
-    ];
-}
+    vectors::*,
+    enemies::*,
+    banners::*,
+};
 
 pub fn draw_player(position: &Vector, window_dimensions: &Vector) 
 {
     // transform local player position to on-screen position
-    let pos_x = (position.x + window_dimensions.x / 2) as i32;
-    let pos_y = (position.y + window_dimensions.y / 2) as i32;
+    let pos = Vector{x: (position.x + window_dimensions.x / 2) - 2 as i32, y: (position.y + window_dimensions.y / 2) + 2 as i32};
 
-    mv(pos_y, pos_x);
-    addstr(".");
-    mv(pos_y + 1, pos_x - 1);
-    addstr("/0\\");
-    mv(pos_y + 2, pos_x - 2);
-    addstr("|H#H|");
-    mv(pos_y + 3, pos_x - 2);
-    addstr("\\/ \\/");
+    draw_banner(&PLAYER, &pos);
 }
 
 pub fn draw_player_bullets(bullets: &Vec<Vector>, win_dimensions: &Vector)
@@ -42,21 +27,14 @@ pub fn draw_player_bullets(bullets: &Vec<Vector>, win_dimensions: &Vector)
 fn draw_asteroid(asteroid: &BasicEnemy, win_dimensions: &Vector)
 {
     let x = asteroid.position.x as i32 + (win_dimensions.x / 2) as i32 - 3;
-    let y = asteroid.position.y as i32 + (win_dimensions.y / 2) as i32 - 3;
+    let y = asteroid.position.y as i32 + (win_dimensions.y / 2) as i32 + 2;
 
     if asteroid.damaged_last_tick
     {
         attron(A_BOLD());
     }
 
-    mv(y + 3, x);
-    addstr("  --");
-    mv(y + 4, x);
-    addstr(" /- .|");
-    mv(y + 5, x);
-    addstr("| .+/");
-    mv(y + 6, x);
-    addstr(" \\_/");
+    draw_banner(&ASTEROID_1, &Vector{y, x});
 
     if asteroid.damaged_last_tick
     {
@@ -99,12 +77,22 @@ pub fn draw_outline(x: i32, y: i32, width: i32, height: i32)
     }
 }
 
-pub fn draw_banner(banner: &Vec<String>, win_dimensions: &Vector)
+pub fn draw_banner(banner: &Vec<String>, pos: &Vector)
 {
     let mut i: i32 = 0;
     while i < banner.len() as i32
     {
-        mvaddstr(win_dimensions.y / 2 + i - banner.len() as i32 / 2, (win_dimensions.x - banner[i as usize].len() as i32) / 2, &banner[i as usize]);
+        mvaddstr(pos.y - banner.len() as i32 / 2 + i, pos.x, &banner[i as usize]);
+        i += 1;
+    }
+}
+
+pub fn draw_banner_center(banner: &Vec<String>, offset: &Vector, win_dimensions: &Vector)
+{
+    let mut i: i32 = 0;
+    while i < banner.len() as i32
+    {
+        mvaddstr(win_dimensions.y / 2 + i - banner.len() as i32 / 2 + offset.y, (win_dimensions.x - banner[i as usize].len() as i32) / 2 + offset.y, &banner[i as usize]);
         i += 1;
     }
 }

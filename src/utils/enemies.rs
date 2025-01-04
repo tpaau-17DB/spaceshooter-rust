@@ -1,7 +1,11 @@
-use crate::{is_in_bounds, Vector};
 use rand::Rng;
 
-use super::collisions::intersect_circles;
+use crate::utils::
+{
+    vectors::*,
+    movement::*,
+    collisions::*,
+};
 
 pub struct BasicEnemy
 {
