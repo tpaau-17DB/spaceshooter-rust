@@ -1,32 +1,26 @@
-use crate::utils::vectors::*;
-
-pub fn move_player_bullets(bullets: &mut Vec<Vector>)
-{
-    for bullet in bullets
-    {
-        bullet.y -= 2;
-    }
-}
+use crate::utils::{
+    vectors::*,
+    player::*,
+};
 
 // force an object to stay in bounds
-pub fn force_bounds_player(position: &mut Vector, bounds: &Vector)
+pub fn force_bounds_player(player: &mut Player, bounds: &Vector)
 {
-    if position.x > bounds.x
+    if player.position.x > bounds.x
     {
-        position.x = bounds.x;
+        player.position.x = bounds.x;
     }
-    else if position.x < -bounds.x
+    else if player.position.x < -bounds.x
     {
-        position.x = -bounds.x
+        player.position.x = -bounds.x
     }
-
-    if position.y > bounds.y
+    if player.position.y > bounds.y
     {
-        position.y = bounds.y;
+        player.position.y = bounds.y;
     }
-    else if position.y < -bounds.y
+    else if player.position.y < -bounds.y
     {
-        position.y = -bounds.y;
+        player.position.y = -bounds.y;
     }
 }
 
@@ -49,9 +43,4 @@ pub fn is_in_bounds(object: &Vector, bounds: &Vector) -> bool
         return false;
     }
     return true;
-}
-
-pub fn force_bounds_objects(objects: &mut Vec<Vector>, bounds: &Vector)
-{
-    objects.retain(|object| is_in_bounds(object, bounds));
 }

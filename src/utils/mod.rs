@@ -5,3 +5,4 @@ pub mod enemies;
 pub mod collisions;
 pub mod scenes;
 pub mod banners;
+pub mod player;

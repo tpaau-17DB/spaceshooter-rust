@@ -5,15 +5,14 @@ use std::thread;
 use std::time::Duration;
 
 mod utils;
-
-use crate::utils::
-{
+use crate::utils::{
     drawing::*,
     movement::*,
     vectors::*,
     enemies::*,
     scenes::*,
-    banners::*
+    banners::*,
+    player::*,
 };
 
 fn main() 
@@ -27,8 +26,6 @@ fn main()
     noecho();
     nodelay(stdscr(), true);
     curs_set(CURSOR_VISIBILITY::CURSOR_INVISIBLE);
-
-    let debug_overlay = true;
 
     // 33 ms sleeptime means that game is running at ~30 FPS.
     // this value is also assumed to be the delta time
@@ -46,24 +43,17 @@ fn main()
 
     let mut scene: Scene = Scene::Game;
 
-    // local Vector [0, 0] represents the center of the screen
-    let mut player_position: Vector = Vector{x: 0, y: gamewindow_y / 2};
-
-    let mut player_score = 0;
-
-    let mut player_bullets: Vec<Vector> = Vec::new();
-    let bullet_timeout_ms = 200;
-    let mut bullet_cooldown = bullet_timeout_ms;
-
     let mut asteroids: Vec<BasicEnemy> = Vec::new();
 
     let bounds: Vector = Vector{x: gamewindow_x / 2, y: gamewindow_y / 2};
 
+    let mut player = Player::default();
+    player.position = Vector{x: 0, y: gamewindow_y / 2};
+    player.set_bounds(&bounds);
+
     let mut win_x: i32;
     let mut win_y: i32;
     let mut win_dimensions: Vector;
-
-    let window_to_small_message = "The terminal window is too small.";
 
     // the main program loop, executed until 'q' is received
     loop 
@@ -74,15 +64,12 @@ fn main()
         win_dimensions = Vector{x: win_x, y: win_y};
 
         // display the message saying that the window is too small
-        if win_x < (gamewindow_x + win_offset_x) as i32 || win_y < (gamewindow_y + win_offset_y) as i32 
-        {
+        if win_x < (gamewindow_x + win_offset_x) as i32
+        || win_y < (gamewindow_y + win_offset_y) as i32 {
             clear();
-            let msg = format!("Required size: x: {gamewindow_x}, y: {gamewindow_y}");
 
-            mv(win_y / 2, (win_x - window_to_small_message.len() as i32) / 2);
-            addstr(&window_to_small_message);
-            mv(win_y / 2 + 1, (win_x - msg.len() as i32) / 2);
-            addstr(&msg);
+            let message = String::from("The terminal window is too small.");
+            draw_message_center(&message, &win_x, &win_y);
 
             let input = getch();
             match input 
@@ -92,9 +79,10 @@ fn main()
             }
 
             thread::sleep(Duration::from_millis(100));
-            continue;
         }
 
+
+        // user input
         let input = getch();
         match input 
         {
@@ -102,14 +90,15 @@ fn main()
             _ => 
             {
                 match input as i32 {
-                    KEY_UP => player_position.y -= 2,
-                    KEY_DOWN => player_position.y += 2,
-                    KEY_LEFT => player_position.x -= 3,
-                    KEY_RIGHT => player_position.x += 3,
+                    KEY_UP => player.position.y -= 2,
+                    KEY_DOWN => player.position.y += 2,
+                    KEY_LEFT => player.position.x -= 3,
+                    KEY_RIGHT => player.position.x += 3,
                     _ => {},
                 };
             }
         }
+
 
         // do specific actions depending on the current scene
         match scene
@@ -121,25 +110,14 @@ fn main()
 
             Scene::Game => 
             {
-                // shoot!
-                bullet_cooldown -= sleeptime_ms;
-                if bullet_cooldown <= 0
-                {
-                    bullet_cooldown = bullet_timeout_ms;
-
-                    player_bullets.push(Vector{x: player_position.x, y: player_position.y});
-                }
-
-                move_player_bullets(&mut player_bullets);
-                player_score += update_enemies(&mut asteroids, &bounds, &mut player_bullets, &tick);
+                player.tick(&asteroids);
+                player.score += update_enemies(&mut asteroids, &bounds,
+                    &mut player, &tick);
 
                 // make sure player is in bounds
-                force_bounds_player(&mut player_position, &bounds);
+                force_bounds_player(&mut player, &bounds);
 
-                // delete the out of bounds bullets
-                force_bounds_objects(&mut player_bullets, &bounds);
-
-                if check_if_player_dead(&player_position, &asteroids)
+                if player.dead()
                 {
                     // game over!
                     scene = Scene::GameOver;
@@ -148,8 +126,8 @@ fn main()
                 // draw game objects
                 clear();
                 draw_asteroids(&asteroids, &win_dimensions);
-                draw_player(&player_position, &win_dimensions);
-                draw_player_bullets(&player_bullets, &win_dimensions);
+                draw_player(&player, &win_dimensions);
+                draw_player_bullets(&player.bullets(), &win_dimensions);
 
                 draw_outline(win_x / 2 - bounds.x as i32 - 3, win_y / 2 - bounds.y as i32 - 1, 2 * bounds.x as i32 + 7, 2 * bounds.y as i32 + 6);
             }
@@ -163,15 +141,16 @@ fn main()
 
 
         // display score
-        let mut message = format!("Score: {}", player_score);
+        let message = format!("Score: {}", player.score);
         mv(win_dimensions.y / 2 + bounds.y + win_offset_y / 2 - 1, win_dimensions.x / 2 - bounds.x - win_offset_x / 2);
         addstr(&message);
 
 
         // draw debug overlay if needed
-        if debug_overlay
-            {
-            message = format!("Player position: x: {}, y: {}", player_position.x, player_position.y);
+        #[cfg(feature = "debug")]
+        {
+            let mut message = format!("Player position: x: {}, y: {}",
+            player.position.x, player.position.y);
             mv(0, 0);
             addstr(&message);
 
@@ -183,7 +162,7 @@ fn main()
             mv(2, 0);
             addstr(&message);
 
-            message = format!("Bullets: {}", player_bullets.len());
+            message = format!("Bullets: {}", player.bullets().len());
             mv(3, 0);
             addstr(&message);
 

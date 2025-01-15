@@ -7,3 +7,6 @@ edition = "2021"
 ncurses = "^5.101.0"
 rand = "^0.8"
 lazy_static = "^1.4"
+
+[features]
+debug = []

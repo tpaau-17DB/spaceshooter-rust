@@ -1,22 +1,22 @@
 use rand::Rng;
 
-use crate::utils::
-{
-    vectors::*,
-    movement::*,
+use crate::utils::{
     collisions::*,
+    movement::*,
+    vectors::*,
+    player::*,
 };
 
-pub struct BasicEnemy
-{
+pub struct BasicEnemy {
     pub damaged_last_tick: bool,
     pub health: i32,
     pub size: f32,
+    pub damage: i32,
     pub position: Vector,
 }
 
-impl Default for BasicEnemy
-{
+
+impl BasicEnemy {
     fn default() -> Self
     {
         BasicEnemy
@@ -24,20 +24,28 @@ impl Default for BasicEnemy
             damaged_last_tick: false,
             health: 4,
             size: 2.0,
+            damage: 1,
             position: Vector{x: 0, y: 0},
         }
     }
 }
 
-pub fn update_enemies(asteroids: &mut Vec<BasicEnemy>, bounds: &Vector, player_bullets: &mut Vec<Vector>, tick: &i32) -> i32
-{
-    // asteroid enemy spawn chance per tick in percent
-    let asteroid_spawn_chance : f32 = 5.0;
+pub struct EnemySpawner {
+    pub asteroid_spawn_chance: f32,
+}
+
+static ENEMY_SPAWNER: EnemySpawner = EnemySpawner {
+    // asteroid spawn chance in percent per tick !!!
+    asteroid_spawn_chance: 5.0,
+};
+
+pub fn update_enemies(asteroids: &mut Vec<BasicEnemy>, bounds: &Vector,
+    player: &mut Player, tick: &i32) -> i32 {
 
     let mut rng = rand::thread_rng();
 
     let rand_num: f32 = rng.gen_range(0.0..100.0); 
-    if rand_num <= asteroid_spawn_chance
+    if rand_num <= ENEMY_SPAWNER.asteroid_spawn_chance
     {
         let mut asteroid = BasicEnemy::default();
         asteroid.position = Vector{x: rng.gen_range(-16..16), y: -16};
@@ -65,11 +73,11 @@ pub fn update_enemies(asteroids: &mut Vec<BasicEnemy>, bounds: &Vector, player_b
         }
 
         let mut j = 0;
-        while j < player_bullets.len()
+        while j < player.bullets().len()
         {
-            if intersect_circles(&asteroids[i].position, &asteroids[i].size, &player_bullets[j], &1.0)
+            if intersect_circles(&asteroids[i].position, &asteroids[i].size, &player.bullets()[j], &1.0)
             {
-                player_bullets.remove(j);
+                player.destroy_bullet(j);
                 asteroids[i].position.y -= 1;
                 asteroids[i].damaged_last_tick = true;
                 asteroids[i].health -= 1;
@@ -91,17 +99,4 @@ pub fn update_enemies(asteroids: &mut Vec<BasicEnemy>, bounds: &Vector, player_b
     }
 
     return score;
-}
-
-pub fn check_if_player_dead(player_position: &Vector, asteroids: &Vec<BasicEnemy>) -> bool
-{
-    for asteroid in asteroids
-    {
-        if intersect_circles(&player_position, &2.0, &asteroid.position, &asteroid.size)
-        {
-            return true;
-        }
-    }
-
-    return false;
 }

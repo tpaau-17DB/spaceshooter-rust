@@ -5,12 +5,15 @@ use crate::utils::
     vectors::*,
     enemies::*,
     banners::*,
+    player::*,
 };
 
-pub fn draw_player(position: &Vector, window_dimensions: &Vector) 
+pub fn draw_player(player: &Player, window_dimensions: &Vector) 
 {
     // transform local player position to on-screen position
-    let pos = Vector{x: (position.x + window_dimensions.x / 2) - 2 as i32, y: (position.y + window_dimensions.y / 2) + 2 as i32};
+    let pos = Vector{
+        x: (player.position.x + window_dimensions.x / 2) - 2 as i32,
+        y: (player.position.y + window_dimensions.y / 2) + 2 as i32};
 
     draw_banner(&PLAYER, &pos);
 }
@@ -95,4 +98,10 @@ pub fn draw_banner_center(banner: &Vec<String>, offset: &Vector, win_dimensions:
         mvaddstr(win_dimensions.y / 2 + i - banner.len() as i32 / 2 + offset.y, (win_dimensions.x - banner[i as usize].len() as i32) / 2 + offset.y, &banner[i as usize]);
         i += 1;
     }
+}
+
+pub fn draw_message_center(message: &String, win_x: &i32, win_y: &i32)
+{
+    mv(win_y / 2, (win_x - message.len() as i32) / 2);
+    addstr(&message);
 }
